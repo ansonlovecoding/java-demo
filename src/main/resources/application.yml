@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: java-demo
+  elasticsearch:
+    uris: 127.0.0.1:9200,127.0.0.1:9200
