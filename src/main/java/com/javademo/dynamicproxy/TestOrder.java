@@ -14,8 +14,8 @@ public class TestOrder {
         //执行接口
         customer.order("汉堡");
 
-        //将动态代理的类输出到项目当前文件夹查看
-        String proxyName = OrderCenter.getInstance(null).proxyName;
+        //模拟动态代理生成代理类输出到项目当前文件夹查看
+        String proxyName = "$proxy0";
         byte[] bytes = ProxyGenerator.generateProxyClass(proxyName, new Class[]{Customer.class});
         FileOutputStream outputStream = new FileOutputStream("./"+proxyName+".class");
         outputStream.write(bytes);
