@@ -2,9 +2,12 @@ package com.javademo.elasticsearch;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ActionRequest;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.DocWriteResponse;
+import org.elasticsearch.action.admin.indices.alias.Alias;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -13,11 +16,19 @@ import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.support.ActiveShardCount;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.action.support.replication.ReplicationResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
+import org.elasticsearch.client.IndicesClient;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.VersionType;
 import org.json.JSONString;
@@ -25,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -183,4 +195,119 @@ public class TestActions {
             System.out.println(e.getMessage());
         }
     }
+
+    //创建索引指定映射
+    public void createIndex(String index) {
+        try {
+            //创建索引请求
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest(index);
+            //设置索引的主分片数和副本分配数,2+1 表示2个主分片各配1个副本分片，所以需要有4个机器
+            createIndexRequest.settings(Settings.builder().put("number_of_shards", 2).put("number_of_replicas", 1));
+            //指定映射
+            Map<String,Object> name = new HashMap<>();
+            name.put("type", "text");
+            Map<String,Object> price = new HashMap<>();
+            price.put("type", "long");
+
+            Map<String,Object> properties = new HashMap<>();
+            properties.put("name",name);
+            properties.put("price",price);
+
+            Map<String,Object> objectMap = new HashMap<>();
+            objectMap.put("properties",properties);
+            createIndexRequest.mapping(objectMap);
+
+            //额外参数，可以依需配置
+//            //设置别名
+//            createIndexRequest.alias(new Alias(index + "_alias"));
+//            //设置超时时间,2分钟
+//            createIndexRequest.setTimeout(TimeValue.timeValueMinutes(2));
+//            //设置主节点超时时间,2分钟
+//            createIndexRequest.setMasterTimeout(TimeValue.timeValueMinutes(2));
+//            //设置操作前必须有多少等待的活动分片
+//            createIndexRequest.waitForActiveShards(ActiveShardCount.from(2));
+
+            //操作索引的客户端
+            IndicesClient indices = client.indices();
+            CreateIndexResponse createIndexResponse = indices.create(createIndexRequest, RequestOptions.DEFAULT);
+            if (createIndexResponse.isAcknowledged()){
+                System.out.println("创建索引成功");
+            }else {
+                System.out.println("创建索引失败");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+
+    }
+
+    //删除索引
+    public void deleteIndex(String index){
+        try {
+            //删除索引请求
+            DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(index);
+
+            //操作索引的客户端
+            IndicesClient indices = client.indices();
+            AcknowledgedResponse delete = indices.delete(deleteIndexRequest, RequestOptions.DEFAULT);
+            if (delete.isAcknowledged()){
+                System.out.println("删除索引成功！");
+            }else {
+                System.out.println("删除索引失败！");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    //异步删除索引,elastic的异步操作都是使用自带的监听器
+    public void deleteIndexAsync(String index){
+        try {
+            //删除索引请求
+            DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(index);
+            //操作索引的客户端
+            IndicesClient indices = client.indices();
+
+            //使用监听
+            ActionListener<AcknowledgedResponse> listener = new ActionListener<AcknowledgedResponse>() {
+
+                @Override
+                public void onResponse(AcknowledgedResponse acknowledgedResponse) {
+                    if (acknowledgedResponse.isAcknowledged()){
+                        System.out.println("删除索引成功！");
+                    }else {
+                        System.out.println("删除索引失败！");
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    System.out.println(e.getMessage());
+                }
+            };
+            indices.deleteAsync(deleteIndexRequest, RequestOptions.DEFAULT, listener);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
+    //索引是否存在
+    public void indexExist(String index){
+        try {
+            //生成请求对象
+            GetIndexRequest getIndexRequest = new GetIndexRequest(index);
+
+            //操作索引的客户端
+            IndicesClient indices = client.indices();
+            boolean existResult = indices.exists(getIndexRequest, RequestOptions.DEFAULT);
+            if (existResult){
+                System.out.println("索引存在");
+            }else {
+                System.out.println("索引不存在");
+            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
+
 }

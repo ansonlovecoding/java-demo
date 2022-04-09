@@ -89,4 +89,13 @@ public class TestDemo {
         list.add(deleteRequest);
         testActions.bulk(list);
     }
+
+    @Test
+    public void testIndex() throws InterruptedException {
+        String index = "food";
+//        testActions.createIndex(index);
+//        testActions.deleteIndex(index);
+        testActions.deleteIndexAsync(index);
+        Thread.sleep(1000);
+    }
 }
