@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @SpringBootTest(classes = DemoApplication.class)
-public class TestDemo {
+public class ThreadPoolDemo {
 
     @Autowired
     TestActions testActions;
