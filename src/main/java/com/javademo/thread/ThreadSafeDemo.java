@@ -24,7 +24,7 @@ public class ThreadSafeDemo {
 //    * 线程本地存储
 
     public static void main(String[] args) throws InterruptedException {
-        
+
         //使用syncronized，可以将线程里的synchronized注释以观察区别
         String lockName = "lock";
         Thread thread1 = new Thread(() -> {
