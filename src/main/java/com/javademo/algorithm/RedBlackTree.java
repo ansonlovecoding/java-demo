@@ -69,6 +69,7 @@ public class RedBlackTree {
 
     public void deleteNode(int value){
         this.root = this.removeNode(this.root, value);
+        this.root = balanceTree(this.root);
 
         //根节点置为黑色
         if (this.root != null){
@@ -324,7 +325,7 @@ public class RedBlackTree {
         //重新上色
         newNode = color(newNode);
         //删除节点可能导致两边树的黑色节点数不相等，需要遍历调整平衡
-        newNode = balanceTree(newNode);
+//        newNode = balanceTree(newNode);
         return newNode;
     }
 
@@ -562,7 +563,12 @@ public class RedBlackTree {
 
         //这里之所以遍历左右子树取最大值，是因为左右子树可能会存在黑色节点数不同，而父节点的左右子树黑色节点数相同的情况
         leftBlackNum = Math.max(tmpLeftBlackNum1, tmpLeftBlackNum2);
-        rightBlackNum = Math.max(tmpRightBlackNum1, tmpRightBlackNum2);
+        rightBlackNum = Math.min(tmpRightBlackNum1, tmpRightBlackNum2);
+
+        if (leftBlackNum == rightBlackNum){
+            leftBlackNum = tmpLeftBlackNum1 + tmpLeftBlackNum2;
+            rightBlackNum = tmpRightBlackNum1 + tmpRightBlackNum2;
+        }
 
         if (leftBlackNum > rightBlackNum){
             return BALANCETYPE.LEFT;
@@ -583,11 +589,6 @@ public class RedBlackTree {
         BALANCETYPE balanceType = isBalanced(node);
         while (balanceType != BALANCETYPE.ZERO){
             if (balanceType == BALANCETYPE.LEFT){
-
-                if (node.rightNode == null){
-                    //由于上色时父黑右红的情况会左转，导致右为空使方法陷入循环，所以对其进行右转
-                    node = newRightRotate(node);
-                }
 
                 //由于左子树的黑色数量大于右子树，所以从左子树取最大节点作为父节点
                 RedBlackNode maxmumNode = maxmum(node.leftNode);
@@ -629,9 +630,9 @@ public class RedBlackTree {
                 node = minimumNode;
             }
 
-            //调整平衡之后重新着色
-            node = color(node);
-            //判断着色后是否平衡
+            node.size = size(node.leftNode) + size(node.rightNode) + 1;
+
+            //判断调整后是否平衡
             balanceType = isBalanced(node);
         }
         return node;

@@ -51,7 +51,7 @@ public class AlgorithmDemo {
         }
 
         for (int i = 0; i < rbtNum.length; i++) {
-            if (rbtNum[i] == 33){
+            if (rbtNum[i] == 12){
                 System.out.println("断点");
             }
             rbTree.deleteNode(rbtNum[i]);
