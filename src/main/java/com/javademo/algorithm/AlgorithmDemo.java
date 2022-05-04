@@ -34,33 +34,46 @@ public class AlgorithmDemo {
 //        tree.removeNode(tree, 3);
 //        System.out.println(tree.value);
 
-        //红黑树的增加和删除，请打断点查看树的每一节点变化
-        int[] rbtNum = {6,14,12,17,18,33,37,42,48,50,88,66,24,54,22,10,4};
-        System.out.println("数组大小："+rbtNum.length);
-        RedBlackTree rbTree = new RedBlackTree();
-        for (int i = 0; i < rbtNum.length; i++) {
-            if (rbtNum[i] == 22){
-                System.out.println("断点");
-            }
-            rbTree.addNode(rbtNum[i]);
-            if (rbTree.checkBalance()){
-                System.out.println("平衡！");
-            }else {
-                System.out.println("不平衡！");
-            }
-        }
+//        //红黑树的增加和删除，请打断点查看树的每一节点变化
+//        int[] rbtNum = {6,14,12,17,18,33,37,42,48,50,88,66,24,54,22,10,4};
+//        System.out.println("数组大小："+rbtNum.length);
+//        RedBlackTree rbTree = new RedBlackTree();
+//        for (int i = 0; i < rbtNum.length; i++) {
+//            if (rbtNum[i] == 22){
+//                System.out.println("断点");
+//            }
+//            rbTree.addNode(rbtNum[i]);
+//            if (rbTree.checkBalance()){
+//                System.out.println("平衡！");
+//            }else {
+//                System.out.println("不平衡！");
+//            }
+//        }
+//
+//        for (int i = 0; i < rbtNum.length; i++) {
+//            if (rbtNum[i] == 12){
+//                System.out.println("断点");
+//            }
+//            rbTree.deleteNode(rbtNum[i]);
+//            if (rbTree.checkBalance()){
+//                System.out.println("平衡！");
+//            }else {
+//                System.out.println("不平衡！");
+//            }
+//        }
 
-        for (int i = 0; i < rbtNum.length; i++) {
-            if (rbtNum[i] == 12){
-                System.out.println("断点");
+        //B树的增加和删除
+        int[] bTreeNum = {39,22,97,41,53,13,21,40,30,27,33,36,35,34,24,29,26,17,28,29,31,32,23};
+        BTree bTree = new BTree(5);
+        for (int i = 0; i < bTreeNum.length; i++) {
+            if (i == 16){
+                System.out.println("断点！");
             }
-            rbTree.deleteNode(rbtNum[i]);
-            if (rbTree.checkBalance()){
-                System.out.println("平衡！");
-            }else {
-                System.out.println("不平衡！");
-            }
+            bTree.add(bTreeNum[i], "data-"+bTreeNum[i]);
+            System.out.println(bTree);
         }
+        System.out.println(bTree);
+
 
     }
 }
