@@ -1,5 +1,6 @@
 package com.javademo.algorithm;
 
+import clojure.lang.Obj;
 import com.sun.corba.se.spi.ior.ObjectKey;
 
 import java.util.*;
@@ -255,11 +256,13 @@ public class BTree {
         Double minmumKeyNum = Math.ceil(this.m/2.0)-1;
 
         List<Map<Integer, Object>> oldKeys = new ArrayList<>(node.keys);
+        List<BTNode> oldChilds = new ArrayList<>(node.childs);
+        List<BTNode> oldFatherChilds = node.father == null ? null : new ArrayList<>(node.father.childs);
+        List<Map<Integer, Object>> oldFatherKeys = node.father == null ? null :  new ArrayList<>(node.father.keys);
+
         for (int i=0; i < oldKeys.size(); i++) {
             Map<Integer, Object> obj = oldKeys.get(i);
             Integer[] tmpKeys = obj.keySet().toArray(new Integer[1]);
-
-            List<BTNode> oldChilds = new ArrayList<>(node.childs);
 
             if (key == tmpKeys[0]){
                 //执行删除逻辑
@@ -277,19 +280,21 @@ public class BTree {
                     //根据节点index来判断要下沉父节点的关键字
                     Map<Integer, Object> fatherKey;
                     if (childIndex == 0){
-                        //节点是子节点列表里的第一个，下沉父节点关键字列表的第一个'
+                        //节点是子节点列表里的第一个，下沉父节点关键字列表的第一个
                         fatherKey = tmpFatherKeys.get(0);
-                    }else if (childIndex == node.father.childs.size()-1){
+                    }else if (childIndex == oldFatherChilds.size()-1){
                         //节点是子节点列表里的最后一个，下沉父节点关键字列表的最后一个
                         fatherKey = tmpFatherKeys.get(tmpFatherKeys.size()-1);
                     }else {
                         //节点位于子节点列表中间，则需判断其左右兄弟节点的关键字数是否不超过Math.celi(m/2)-1
-                        //如果左节点没有超过则下沉父节点第(childIndex-1)关键字,如果右节点没有超过则下沉父节点第childIndex关键字
-                        BTNode prefixNode = node.father.childs.get(childIndex-1);
-                        if (prefixNode.keys.size() < minmumKeyNum){
-                            fatherKey = tmpFatherKeys.get(childIndex-1);
-                        }else {
+                        //如果右节点超过则下沉父节点第childIndex关键字,如果右节点没有超过则下沉父节点第(childIndex-1)关键字
+                        System.out.println(node.father.childs.size());
+                        System.out.println(childIndex);
+                        BTNode surfixNode = oldFatherChilds.get(childIndex+1);
+                        if (surfixNode.keys.size() > minmumKeyNum){
                             fatherKey = tmpFatherKeys.get(childIndex);
+                        }else {
+                            fatherKey = tmpFatherKeys.get(childIndex-1);
                         }
                     }
 
@@ -306,6 +311,7 @@ public class BTree {
                 //删除的为非叶子节点。分为以下情况：
                 //1.该节点的左右孩子节点有关键字数量大于Math.celi(m/2)-1的节点，左孩子则取最大关键字右孩子则取最小关键字替换删除的节点，左右孩子对应剔除取出的关键字
                 //2.该节点的左右孩子节点关键字数量都不大于Math.celi(m/2)-1的节点，将左右孩子合并
+                //3.非根节点的关键字数量不小于Math.celi(m/2)-1，根节点关键字数量不小于1
                 if (oldChilds.size() > 0){
                     //原节点关键字
                     List<Map<Integer, Object>> tmpFatherKeys = oldKeys;
@@ -319,21 +325,21 @@ public class BTree {
                         //删除关键字为第一个，左右孩子为第一个和第二个
                         leftNode = oldChilds.get(0);
                         rightNode = oldChilds.get(1);
-                    }else if (i == oldChilds.size()-1){
+                    }else if (i == oldKeys.size()-1){
                         //删除关键字为最后一个，左右孩子为倒数两个
                         leftNode = oldChilds.get(oldChilds.size()-2);
                         rightNode = oldChilds.get(oldChilds.size()-1);
                     }else {
-                        //删除关键字为最后一个，左右孩子为第i和第i+1个
+                        //删除关键字为中间，左右孩子为第i和第i+1个
                         leftNode = oldChilds.get(i);
                         rightNode = oldChilds.get(i + 1);
                     }
 
-                    //当左孩子关键字数大于Math.celi(m/2)-1取其关键字最后一个上浮，当右孩子关键字数大于Math.celi(m/2)-1取其关键字第一个上浮
+                    //当左孩子关键字数大于Math.celi(m/2)-1取其树的最大关键字上浮，当右孩子关键字数大于Math.celi(m/2)-1取其树的最小关键字上浮
                     if (leftNode != null && leftNode.keys.size() > minmumKeyNum){
-                        leftUpKey = leftNode.keys.get(leftNode.keys.size()-1);
+                        leftUpKey = maxKey(leftNode);
                     }else if (rightNode != null && rightNode.keys.size() > minmumKeyNum){
-                        rightUpKey = rightNode.keys.get(0);
+                        rightUpKey = minKey(rightNode);
                     }
 
                     //当有上浮关键字则上浮，不需合并左右孩子，否则需要合并左右孩子
@@ -349,56 +355,73 @@ public class BTree {
                         node = addNode(node, tmpRightKey, tmpRightValue, false);
                     }else {
                         leftNode.keys.addAll(rightNode.keys);
-                        leftNode.childs.addAll(rightNode.childs);
+
+                        //将左节点的最后一个子节点和右节点的第一个子节点合并
+                        if (leftNode.childs.size() > 0){
+                            BTNode leftLastNode = leftNode.childs.get(leftNode.childs.size()-1);
+                            BTNode rightFirstNode = rightNode.childs.get(0);
+
+                            //判断左右子节点的关键字数量是否大于Math.celi(m/2)-1
+                            //左子节点大于则取其最大关键字上浮，右子节点大于则取其最小关键字上浮
+                            //都不大于则直接合并
+                            if (leftLastNode.keys.size() > minmumKeyNum){
+                                Map<Integer, Object> tmpLeftUpKey = maxKey(leftLastNode);
+                                Integer tmpKey2 = tmpLeftUpKey.keySet().toArray(new Integer[1])[0];
+                                leftNode.keys.add(tmpLeftUpKey);
+                                leftNode = sortKeysAndChilds(leftNode);
+                                leftLastNode = removeNode(leftLastNode, tmpKey2, null);
+                            }else if (rightFirstNode.keys.size() > minmumKeyNum){
+                                Map<Integer, Object> tmpRightUpKey = minKey(rightFirstNode);
+                                Integer tmpKey2 = tmpRightUpKey.keySet().toArray(new Integer[1])[0];
+                                leftNode.keys.add(tmpRightUpKey);
+                                leftNode = sortKeysAndChilds(leftNode);
+                                rightFirstNode = removeNode(rightFirstNode, tmpKey2, null);
+                            }
+
+                        }
+
+                        for (BTNode rightChild:rightNode.childs
+                        ) {
+                            rightChild.father = leftNode;
+                            leftNode.childs.add(rightChild);
+                        }
+
+                        //判断leftnode关键字数量是否超过m-1,超过m-1取中间关键字先删除再走addnode方法
+                        if (leftNode.keys.size() > this.m - 1){
+                            //获取中间关键字
+                            Map<Integer, Object> centerKey = leftNode.keys.get(minmumKeyNum.intValue());
+                            Integer tmpCenterKey = centerKey.keySet().toArray(new Integer[1])[0];
+                            Object tmpCenterValue = centerKey.get(tmpCenterKey);
+                            //先删除该关键字
+                            leftNode.keys.remove(minmumKeyNum.intValue());
+                            //再走addnode方法
+                            leftNode = addNode(leftNode, tmpCenterKey, tmpCenterValue, true);
+                        }
+
                         node.childs.remove(rightNode);
                         rightNode = null;
                     }
 
                     //非根节点，关键字少于Math.ceil(m/2)-1，需要从父节点下沉关键字
-                    //下沉后如果兄弟节点关键字数量大于Math.celi(m/2)-1，从兄弟节点抽取关键字上移到父节点
                     if (node.keys.size() < minmumKeyNum && node.father != null){
-                        List<BTNode> oldFatherChilds = new ArrayList<>(node.father.childs);
-                        List<Map<Integer, Object>> oldFatherKeys = new ArrayList<>(node.father.keys);
-                        BTNode brotherNode = null;
-                        Map<Integer, Object> brotherKey = null;
-
-                        //找到父节点要下沉关键字和兄弟节点要上浮的关键字
+                        //找到父节点要下沉关键字
                         Map<Integer, Object> downKey = null;
                         Integer nodeIndex = node.index;
                         if (nodeIndex != null){
                             if (nodeIndex == 0){
-                                //节点是子节点列表里的第一个，兄弟节点则是第二个，取兄弟节点的第一个关键字
-                                brotherNode = oldFatherChilds.get(nodeIndex+1);
+                                //节点是子节点列表里的第一个
                                 downKey = oldFatherKeys.get(0);
-                                if (brotherNode.keys.size() > minmumKeyNum){
-                                    brotherKey = brotherNode.keys.get(0);
-                                }
                             }else if (nodeIndex == oldFatherChilds.size()-1){
-                                //节点是子节点列表里的最后一个，兄弟节点则是倒数第二个，取兄弟节点的最后一个关键字
-                                brotherNode = oldFatherChilds.get(nodeIndex-1);
+                                //节点是子节点列表里的最后一个
                                 downKey = oldFatherKeys.get(oldFatherKeys.size()-1);
-                                if (brotherNode.keys.size() > minmumKeyNum){
-                                    brotherKey = brotherNode.keys.get(brotherNode.keys.size()-1);
-                                }
                             }else {
                                 //节点位于子节点列表中间，则需判断其左右兄弟节点的关键字数是否大于Math.celi(m/2)-1
                                 //如果左节点超过则取左节点最后一个关键字，如果是右节点取右节点第一个关键字
                                 BTNode prefixNode = oldFatherChilds.get(nodeIndex-1);
-                                BTNode surfixNode = oldFatherChilds.get(nodeIndex+1);
-                                if (prefixNode.keys.size() > minmumKeyNum){
-                                    brotherNode = prefixNode;
-                                    brotherKey = prefixNode.keys.get(prefixNode.keys.size()-1);
-                                }else if (surfixNode.keys.size() > minmumKeyNum){
-                                    brotherNode = surfixNode;
-                                    brotherKey = surfixNode.keys.get(0);
-                                }else {
-                                    brotherNode = prefixNode;
-                                }
-
                                 if (prefixNode.keys.size() < minmumKeyNum){
                                     downKey = oldFatherKeys.get(nodeIndex-1);
                                 }else {
-                                    downKey = oldFatherKeys.get(nodeIndex-1);
+                                    downKey = oldFatherKeys.get(nodeIndex);
                                 }
                             }
                         }
@@ -406,7 +429,7 @@ public class BTree {
                         //将下沉的关键字添加到节点，并从父节点删除
                         Integer tmpDownKey = downKey.keySet().toArray(new Integer[1])[0];
                         Object tmpDownValue = downKey.get(tmpDownKey);
-                        node = addNode(node, tmpDownKey, tmpDownValue, false);
+                        node = addNode(node, tmpDownKey, tmpDownValue, true);
                         node.father = removeNode(node.father, tmpDownKey, null);
 
                     }
@@ -459,7 +482,11 @@ public class BTree {
 
         //如果自己节点关键字数为0，则取子节点替代自己
         if (node.keys.size() == 0){
-            node = node.childs.get(0);
+            BTNode tmpNode = node.childs.get(0);
+            if (tmpNode != null){
+                tmpNode.father = node.father;
+            }
+            node = tmpNode;
         }
 
         return node;
@@ -503,5 +530,33 @@ public class BTree {
             }
         }
         return node;
+    }
+
+    private Map<Integer, Object> maxKey(BTNode node){
+        if (node == null){
+            return null;
+        }
+        Map<Integer, Object> maxKey = null;
+        if (node.childs.size()>0){
+            BTNode maxNode = node.childs.get(node.childs.size()-1);
+            maxKey = maxNode.keys.get(maxNode.keys.size()-1);
+        }else {
+            maxKey = node.keys.get(node.keys.size()-1);
+        }
+        return maxKey;
+    }
+
+    private Map<Integer, Object> minKey(BTNode node){
+        if (node == null){
+            return null;
+        }
+        Map<Integer, Object> minKey = null;
+        if (node.childs.size()>0){
+            BTNode minNode = node.childs.get(0);
+            minKey = minNode.keys.get(0);
+        }else {
+            minKey = node.keys.get(0);
+        }
+        return minKey;
     }
 }

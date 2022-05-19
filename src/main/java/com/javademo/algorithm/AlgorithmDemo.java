@@ -73,12 +73,11 @@ public class AlgorithmDemo {
             System.out.println(bTree);
         }
         System.out.println(bTree);
-        int[] deleteBTreeNum = {21,27,32,40};
-        for (int i = 0; i < deleteBTreeNum.length; i++) {
-            if (i == 3){
+        for (int i = 0; i < bTreeNum.length; i++) {
+            if (i == 17){
                 System.out.println("断点！");
             }
-            bTree.remove(deleteBTreeNum[i]);
+            bTree.remove(bTreeNum[i]);
             System.out.println(bTree);
         }
         System.out.println(bTree);
