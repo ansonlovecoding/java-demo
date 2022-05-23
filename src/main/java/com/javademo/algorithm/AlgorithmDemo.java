@@ -62,26 +62,37 @@ public class AlgorithmDemo {
 //            }
 //        }
 
-        //B树的增加和删除
-        int[] bTreeNum = {39,22,97,41,53,13,21,40,30,27,33,36,35,34,24,29,26,17,28,29,31,32,23};
-        BTree bTree = new BTree(5);
-        for (int i = 0; i < bTreeNum.length; i++) {
-            if (i == 16){
-                System.out.println("断点！");
-            }
-            bTree.add(bTreeNum[i], "data-"+bTreeNum[i]);
-            System.out.println(bTree);
-        }
-        System.out.println(bTree);
-        for (int i = 0; i < bTreeNum.length; i++) {
-            if (i == 17){
-                System.out.println("断点！");
-            }
-            bTree.remove(bTreeNum[i]);
-            System.out.println(bTree);
-        }
-        System.out.println(bTree);
+//        //B树的增加和删除
+//        int[] bTreeNum = {39,22,97,41,53,13,21,40,30,27,33,36,35,34,24,29,26,17,28,29,31,32,23};
+//        BTree bTree = new BTree(5);
+//        for (int i = 0; i < bTreeNum.length; i++) {
+//            if (i == 16){
+//                System.out.println("断点！");
+//            }
+//            bTree.add(bTreeNum[i], "data-"+bTreeNum[i]);
+//            System.out.println(bTree);
+//        }
+//        System.out.println(bTree);
+//        for (int i = 0; i < bTreeNum.length; i++) {
+//            if (i == 17){
+//                System.out.println("断点！");
+//            }
+//            bTree.remove(bTreeNum[i]);
+//            System.out.println(bTree);
+//        }
+//        System.out.println(bTree);
 
-
+        //跳跃表,需要大量数据才能测试出索引的分布
+        double[] skipListScores = new double[]{1,3,5,4,2};
+        String[] skipListObjs = new String[]{"作者","一个","帅哥","大","是"};
+        SkipList skipList = new SkipList();
+        for (int i = 0; i < skipListScores.length; i++) {
+            SkipList.SkipListNode node = skipList.insert(skipListScores[i], skipListObjs[i]);
+        }
+        System.out.println(skipList.nodeLength);
+        for (int i = 0; i < skipListScores.length; i++) {
+            boolean result = skipList.deleteNode(skipListScores[i], skipListObjs[i]);
+        }
+        System.out.println(skipList.nodeLength);
     }
 }
