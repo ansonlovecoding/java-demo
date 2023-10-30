@@ -85,21 +85,21 @@ public class ReflectionDemo {
         String fieldClassName = testReflectionClass.getDeclaredField("number").getType().getName();
         System.out.println("类对象的成员变量number所属类的名称:"+fieldClassName);
 
-        //获取类对象的public成员变量数组（包含继承）
+        //获取类对象以及其父类的public成员变量数组
         String fieldArrayString = Arrays.toString(testReflectionClass.getFields());
-        System.out.println("获取类对象的public成员变量数组（包含继承）:"+fieldArrayString);
+        System.out.println("获取类对象以及其父类的public成员变量数组:"+fieldArrayString);
 
-        //获取类对象的所有成员变量数组（不包含继承）,包含自身对象
+        //获取类对象以及其父类的所有成员变量数组
         String declaredFieldArrayString = Arrays.toString(testReflectionClass.getDeclaredFields());
-        System.out.println("获取类对象的所有成员变量数组（不包含继承）:"+declaredFieldArrayString);
+        System.out.println("获取类对象以及其父类的所有成员变量数组:"+declaredFieldArrayString);
 
-        //类对象的所有public方法(包含继承)
+        //类对象以及其父类的所有public方法
         String methodArrayString = Arrays.toString(testReflectionClass.getMethods());
-        System.out.println("类对象的所有public方法(包含继承):"+methodArrayString);
+        System.out.println("类对象以及其父类的所有public方法:"+methodArrayString);
 
-        //类对象的所有方法(不包含继承)
+        //类对象以及其父类的所有方法
         String declaredMethodArrayString = Arrays.toString(testReflectionClass.getDeclaredMethods());
-        System.out.println("类对象的所有方法(不包含继承):"+declaredMethodArrayString);
+        System.out.println("类对象以及其父类的所有方法:"+declaredMethodArrayString);
 
         //类对象的所有注解(包含父类可继承注解),注意不包括成员变量的注解
         String annotationArrayString = Arrays.toString(testReflectionClass.getAnnotations());
@@ -147,10 +147,10 @@ public class ReflectionDemo {
         //输出内容
 //        类对象所属类的名称:com.javademo.reflection.ReflectionDemo$TestReflection
 //        类对象的成员变量number所属类的名称:java.lang.Number
-//        获取类对象的public成员变量数组（包含继承）:[public java.lang.Float com.javademo.reflection.ReflectionDemo$TestReflection.store, public java.lang.Float com.javademo.reflection.ReflectionDemo$TestFather.price]
-//        获取类对象的所有成员变量数组（不包含继承）:[public java.lang.Float com.javademo.reflection.ReflectionDemo$TestReflection.store, private java.lang.Number com.javademo.reflection.ReflectionDemo$TestReflection.number, protected java.lang.String com.javademo.reflection.ReflectionDemo$TestReflection.name, final com.javademo.reflection.ReflectionDemo com.javademo.reflection.ReflectionDemo$TestReflection.this$0]
-//        类对象的所有public方法(包含继承):[public void com.javademo.reflection.ReflectionDemo$TestReflection.testPublic(), public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException, public final native void java.lang.Object.wait(long) throws java.lang.InterruptedException, public final void java.lang.Object.wait() throws java.lang.InterruptedException, public boolean java.lang.Object.equals(java.lang.Object), public java.lang.String java.lang.Object.toString(), public native int java.lang.Object.hashCode(), public final native java.lang.Class java.lang.Object.getClass(), public final native void java.lang.Object.notify(), public final native void java.lang.Object.notifyAll()]
-//        类对象的所有方法(不包含继承):[private void com.javademo.reflection.ReflectionDemo$TestReflection.testPrivate(java.lang.String,java.lang.Number), public void com.javademo.reflection.ReflectionDemo$TestReflection.testPublic()]
+//        获取类对象以及其父类的public成员变量数组:[public java.lang.Float com.javademo.reflection.ReflectionDemo$TestReflection.store, public java.lang.Float com.javademo.reflection.ReflectionDemo$TestFather.price]
+//        获取类对象以及其父类的所有成员变量数组:[public java.lang.Float com.javademo.reflection.ReflectionDemo$TestReflection.store, private java.lang.Number com.javademo.reflection.ReflectionDemo$TestReflection.number, protected java.lang.String com.javademo.reflection.ReflectionDemo$TestReflection.name, final com.javademo.reflection.ReflectionDemo com.javademo.reflection.ReflectionDemo$TestReflection.this$0]
+//        类对象以及其父类的所有public方法:[public void com.javademo.reflection.ReflectionDemo$TestReflection.testPublic(), public final void java.lang.Object.wait(long,int) throws java.lang.InterruptedException, public final native void java.lang.Object.wait(long) throws java.lang.InterruptedException, public final void java.lang.Object.wait() throws java.lang.InterruptedException, public boolean java.lang.Object.equals(java.lang.Object), public java.lang.String java.lang.Object.toString(), public native int java.lang.Object.hashCode(), public final native java.lang.Class java.lang.Object.getClass(), public final native void java.lang.Object.notify(), public final native void java.lang.Object.notifyAll()]
+//        类对象以及其父类的所有方法:[private void com.javademo.reflection.ReflectionDemo$TestReflection.testPrivate(java.lang.String,java.lang.Number), public void com.javademo.reflection.ReflectionDemo$TestReflection.testPublic()]
 //        类对象的所有注解(包含继承):[@com.javademo.reflection.ReflectionDemo$FatherInherited(value=可继承注解！), @org.springframework.context.annotation.Description(value=这是测试类！)]
 //        类对象的所有注解(不包含继承):[@org.springframework.context.annotation.Description(value=这是测试类！)]
 //        Field赋值后的结果：李小龙
